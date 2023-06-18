@@ -1,12 +1,13 @@
-from sqlalchemy import Table, Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.ext.declarative import declarative_base
 
-from src.database import metadata
+Base = declarative_base()
 
-task = Table(
-    "task",
-    metadata,
-    Column("id", Integer, primary_key=True),
-    Column("title", String),
-    Column("description", String, nullable=True),
-    Column("completed", Boolean),
-)
+
+class Task(Base):
+    __tablename__ = 'task'
+
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    description = Column(String, nullable=True)
+    completed = Column(Boolean)
