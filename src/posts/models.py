@@ -11,3 +11,5 @@ class Task(Base):
     title = Column(String)
     description = Column(String, nullable=True)
     completed = Column(Boolean)
+
+
