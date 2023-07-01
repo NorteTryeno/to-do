@@ -42,7 +42,10 @@ async def selection(task_op, column_name, session):
             else:
                 raise HTTPException(status_code=400, detail="Invalid value for task_op")
         else:
-            raise HTTPException(status_code=400, detail="Invalid value for task_op")
+            # raise HTTPException(status_code=400, detail="Invalid value for task_op")
+            pass
+
+    filter_expr = column == task_op
 
     query = await session.execute(select(Task).where(filter_expr))
 
@@ -101,6 +104,8 @@ async def mark_complete(marked_title: str, togle: bool, session: AsyncSession = 
     task = await get_by_title(marked_title, session)
 
     task.completed = togle
+
+    await session.commit()
 
     return {f'{marked_title}': 'changed'}
 
