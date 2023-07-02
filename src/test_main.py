@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
-
 from src.database import get_async_session
 from src.main import app
 from src.posts.models import Task
@@ -10,14 +9,19 @@ client = TestClient(app)
 
 
 async def override_get_async_session():
+    """
+    This function overrides the get_async_session dependency to provide a session within a context manager.
+    """
     async with get_async_session() as session:
         yield session
 
 app.dependency_overrides[get_async_session] = override_get_async_session
 
 
-def test_get_task():
-
+async def test_get_task():
+    """
+    Test case for the '/get_task' endpoint to retrieve a specific task.
+    """
     task1 = Task(title="Task 1", description="Description 1")
     task2 = Task(title="Task 2", description="Description 2")
 
@@ -37,7 +41,10 @@ def test_get_task():
             assert task["description"] == "Description 1"
 
 
-def test_get_all():
+async def test_get_all():
+    """
+    Test case for the '/get_all' endpoint to retrieve multiple tasks with pagination.
+    """
     limit1, offset1 = 1, 0
     limit2, offset2 = 2, 1
 
@@ -75,7 +82,10 @@ def test_get_all():
             assert task3["description"] == "Description 3"
 
 
-def test_add_task():
+async def test_add_task():
+    """
+    Test case for the '/add_task' endpoint to add a new task.
+    """
     task1 = {"title": "Task 1", "description": "Description 1", "completed": False}
 
     with TestClient(app) as client:
@@ -92,7 +102,10 @@ def test_add_task():
             assert task.completed == task1["completed"]
 
 
-def test_update_task():
+async def test_update_task():
+    """
+    Test case for the '/update_task' endpoint to update an existing task.
+    """
     new_t = "Test_Update"
     new_d = "Test_Description_Updated"
     o_d = "Task 1"
@@ -110,31 +123,33 @@ def test_update_task():
             assert task.description == new_d
 
 
-def test_mark_complete():
-
+async def test_mark_complete():
+    """
+    Test case for the '/mark_complete' endpoint to mark a task as complete.
+    """
     marked_test_title = "Test_Update"
-    togle = True
+    toggle = True
 
     with TestClient(app) as client:
         with get_async_session() as session:
-
-            response = client.post("/mark_complete", params={"marked_title": marked_test_title, "togle": togle})
+            response = client.post("/mark_complete", params={"marked_title": marked_test_title, "toggle": toggle})
             assert response.status_code == 200
             assert response.json() == {f'{marked_test_title}': 'changed'}
 
             result = await session.execute(select(Task).where(Task.title == marked_test_title))
             task = result.scalar_one_or_none()
             assert task is not None
-            assert task["completed"] == togle
+            assert task["completed"] == toggle
 
 
-def test_delete_task():
-
+async def test_delete_task():
+    """
+    Test case for the '/del_task' endpoint to delete a task.
+    """
     task_title = "Test Task"
 
     with TestClient(app) as client:
         with get_async_session() as session:
-
             task = Task(title=task_title)
             session.add(task)
             session.commit()
